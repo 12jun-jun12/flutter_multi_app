@@ -8,7 +8,7 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: const CustomAppBar(title: 'HomeView'),
       body: GridView.builder(
         padding: const EdgeInsets.all(24.0),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -28,7 +28,8 @@ class HomeView extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,
               child: Center(
                 child: Text(
-                  'Map View',
+                  AppViews.views[index].runtimeType.toString(),
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.bold,

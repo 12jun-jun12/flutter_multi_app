@@ -5,12 +5,14 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_multi_app/custom_app_bar.dart';
 import 'package:flutter_multi_app/model/marker_data.dart';
+import 'package:flutter_multi_app/utility/app_logger.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 
 class FlutterMapView extends StatefulWidget {
-  const FlutterMapView({super.key});
+  const FlutterMapView({super.key, required this.title});
+  final String title;
 
   @override
   State<FlutterMapView> createState() => _FlutterMapViewState();
@@ -19,16 +21,16 @@ class FlutterMapView extends StatefulWidget {
 class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStateMixin {
   late final AnimatedMapController _animatedMapController = AnimatedMapController(vsync: this);
 
-  List<MarkerData> _markerData = [];
-  List<Marker> _markers = [];
+  final List<MarkerData> _markerData = [];
+  final List<Marker> _markers = [];
   LatLng? _selectedPosition;
   LatLng? _mylocation;
   LatLng? _draggedPotition;
   bool _isDragging = false;
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   List<dynamic> _searchResults = [];
   bool _isSearching = false;
-  FocusNode _focusNode = FocusNode();
+  final FocusNode _focusNode = FocusNode();
 
   // get current location
   Future<Position> _determinePosition() async {
@@ -67,9 +69,9 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
         _mylocation = currentLatLng;
         _animatedMapController.animateTo(dest: currentLatLng);
       });
-    } catch (e) {
+    } catch (e, st) {
       // Handle the error
-      print('Error getting location: $e');
+      logger.e('Error getting location: $e', stackTrace: st);
     }
   }
 
@@ -88,7 +90,7 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
             child: Column(
               children: <Widget>[
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
@@ -96,18 +98,18 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
                       BoxShadow(
                         color: Colors.black.withOpacity(0.2),
                         blurRadius: 4,
-                        offset: Offset(0, 2),
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: Text(
                     title,
-                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Icon(
+                const Icon(
                   Icons.location_pin,
                   color: Colors.red,
                   size: 30,
@@ -122,23 +124,23 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
 
   // show marker dialog
   void _showMarkerDialog(BuildContext context, LatLng position) {
-    final TextEditingController _titleController = TextEditingController();
-    final TextEditingController _descController = TextEditingController();
+    final TextEditingController titleController = TextEditingController();
+    final TextEditingController descController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add Marker'),
+          title: const Text('Add Marker'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               TextField(
-                controller: _titleController,
-                decoration: InputDecoration(labelText: 'Title'),
+                controller: titleController,
+                decoration: const InputDecoration(labelText: 'Title'),
               ),
               TextField(
-                controller: _descController,
-                decoration: InputDecoration(labelText: 'Description'),
+                controller: descController,
+                decoration: const InputDecoration(labelText: 'Description'),
               ),
             ],
           ),
@@ -150,7 +152,7 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _addMarker(position, _titleController.text, _descController.text);
+                _addMarker(position, titleController.text, descController.text);
               },
               child: const Text('Save'),
             ),
@@ -172,7 +174,7 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
           actions: [
             IconButton(
               onPressed: () => Navigator.of(context).pop(),
-              icon: Icon(Icons.close),
+              icon: const Icon(Icons.close),
             ),
           ],
         );
@@ -243,7 +245,7 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: CustomAppBar(title: widget.title),
       body: Stack(
         children: [
           FlutterMap(
@@ -251,7 +253,7 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
             options: MapOptions(
               // you can set the initial position of the map here
               // Here is Tokyo Station.
-              initialCenter: LatLng(35.680585, 139.767286),
+              initialCenter: const LatLng(35.680585, 139.767286),
               initialZoom: 15.0,
               maxZoom: 18.0,
               minZoom: 10.0,
@@ -318,7 +320,7 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
                       borderRadius: BorderRadius.circular(50),
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search),
                     suffixIcon: _isSearching
                         ? IconButton(
                             onPressed: () {
@@ -329,7 +331,7 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
                                 _searchResults = [];
                               });
                             },
-                            icon: Icon(Icons.clear))
+                            icon: const Icon(Icons.clear))
                         : null,
                   ),
                   onTap: () {
@@ -343,7 +345,7 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
                     color: Colors.white,
                     child: ListView.builder(
                       shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(8.0),
                       itemCount: _searchResults.length,
                       itemBuilder: (context, index) {
@@ -376,7 +378,7 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
                       _isDragging = true;
                     });
                   },
-                  child: Icon(Icons.add_location),
+                  child: const Icon(Icons.add_location),
                 ),
               ),
             )
@@ -394,7 +396,7 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
                       _isDragging = false;
                     });
                   },
-                  child: Icon(Icons.wrong_location),
+                  child: const Icon(Icons.wrong_location),
                 ),
               ),
             ),
@@ -409,11 +411,11 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
                     backgroundColor: Theme.of(context).colorScheme.surface,
                     foregroundColor: Theme.of(context).colorScheme.onSurface,
                     onPressed: _showCurrentLocation,
-                    child: Icon(Icons.my_location),
+                    child: const Icon(Icons.my_location),
                   ),
                   if (_isDragging)
                     Padding(
-                      padding: EdgeInsets.only(top: 20),
+                      padding: const EdgeInsets.only(top: 20),
                       child: FloatingActionButton(
                         heroTag: 'current_location',
                         backgroundColor: Colors.greenAccent,
@@ -428,7 +430,7 @@ class _FlutterMapViewState extends State<FlutterMapView> with TickerProviderStat
                             _draggedPotition = null;
                           });
                         },
-                        child: Icon(Icons.check),
+                        child: const Icon(Icons.check),
                       ),
                     )
                 ],
